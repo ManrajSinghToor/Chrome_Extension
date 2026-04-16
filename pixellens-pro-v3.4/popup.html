@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PixelLens Pro</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">🔍</span>
+        <span class="logo-text">PixelLens <span class="pro">Pro</span></span>
+      </div>
+      <span class="version">v3.4</span>
+    </header>
+
+    <section class="section" id="tab-section">
+      <div class="tab-preview-bar">
+        <span class="tab-label">📸 Current Tab (auto-captured)</span>
+        <span class="tab-url" id="tab-url">Capturing...</span>
+      </div>
+      <div class="tab-preview-wrap">
+        <img id="tab-preview" class="tab-preview-img" alt="Current tab screenshot">
+      </div>
+    </section>
+
+    <section id="upload-section" class="section">
+      <h3 class="section-title">Design Reference</h3>
+      <div class="design-input-group">
+        <div class="figma-link-row">
+          <input type="text" id="figma-link" class="text-input" placeholder="Paste Figma link, image URL, or any website URL...">
+          <button id="fetch-link-btn" class="btn-icon" title="Fetch / Screenshot URL">⬇</button>
+        </div>
+        <p class="input-hint">Supports: direct image URLs, Figma share links, or any website URL (auto-screenshots)</p>
+        <div class="or-divider"><span>or</span></div>
+        <div class="upload-box" id="design-box">
+          <input type="file" id="design-input" accept="image/*" hidden>
+          <div class="upload-placeholder" id="design-placeholder">
+            <span class="upload-icon">🎨</span>
+            <span>Upload design screenshot</span>
+          </div>
+          <img id="design-preview" class="preview-img" hidden>
+        </div>
+      </div>
+      <button id="analyze-btn" class="btn-primary" disabled>
+        <span id="btn-text">Analyze</span>
+        <span id="btn-loader" class="loader" hidden></span>
+      </button>
+    </section>
+
+    <section id="results-section" class="section" hidden>
+      <div class="score-bar">
+        <div class="score-circle" id="score-circle">
+          <span id="score-value">--</span>
+        </div>
+        <div class="score-breakdown">
+          <div class="score-item"><span class="label">Layout</span><span id="s-layout" class="val">--</span></div>
+          <div class="score-item"><span class="label">Typography</span><span id="s-typo" class="val">--</span></div>
+          <div class="score-item"><span class="label">Colors</span><span id="s-colors" class="val">--</span></div>
+          <div class="score-item"><span class="label">Spacing</span><span id="s-spacing" class="val">--</span></div>
+        </div>
+      </div>
+      <p id="summary" class="summary"></p>
+
+      <div class="mode-toggle">
+        <button class="mode-btn active" data-mode="visual">🎨 Visual</button>
+        <button class="mode-btn" data-mode="developer">🛠 Developer</button>
+      </div>
+
+      <!-- VISUAL VIEW: clean side-by-side + slider only -->
+      <div id="visual-view">
+        <div class="comparison-section">
+          <h4 class="sub-title">Side-by-Side</h4>
+          <div class="side-by-side">
+            <div class="compare-pane">
+              <div class="compare-label">Design</div>
+              <div class="compare-img-wrap"><canvas id="design-display"></canvas></div>
+            </div>
+            <div class="compare-pane">
+              <div class="compare-label">Implementation</div>
+              <div class="compare-img-wrap"><canvas id="impl-display"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="visual-section">
+          <h4 class="sub-title">Design ↔ Implementation</h4>
+          <div class="slider-container">
+            <canvas id="slider-canvas"></canvas>
+            <input type="range" id="slider-range" min="0" max="100" value="50" class="slider-input">
+            <div class="slider-labels"><span>◀ Design</span><span>Implementation ▶</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEVELOPER VIEW: annotated screenshot + detailed issue cards -->
+      <div id="developer-view" hidden>
+        <div class="filter-bar">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="critical">🔴 Critical</button>
+          <button class="filter-btn" data-filter="high">🟠 High</button>
+          <button class="filter-btn" data-filter="medium">🟡 Medium</button>
+          <button class="filter-btn" data-filter="low">🟢 Low</button>
+        </div>
+
+        <div class="dev-annotated-wrap">
+          <h4 class="sub-title">Annotated Screenshot</h4>
+          <p class="sub-hint">Numbered markers show issue locations — hover for details, click a card below to highlight</p>
+          <div class="canvas-wrapper">
+            <canvas id="dev-annotated-canvas"></canvas>
+            <div id="dev-tooltip" class="tooltip" hidden></div>
+          </div>
+        </div>
+
+        <h4 class="sub-title">Issue Details</h4>
+        <div id="issues-list" class="issues-list"></div>
+
+        <div id="a11y-section">
+          <h4 class="sub-title">♿ Accessibility Issues</h4>
+          <div id="a11y-list" class="issues-list"></div>
+        </div>
+      </div>
+
+      <div class="export-bar">
+        <button id="export-json" class="btn-secondary">📥 Export JSON</button>
+        <button id="export-csv" class="btn-secondary">📊 Export CSV</button>
+      </div>
+    </section>
+
+    <div id="error-msg" class="error" hidden></div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
