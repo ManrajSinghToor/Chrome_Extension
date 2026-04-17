@@ -1,13 +1,23 @@
-import { Search, Settings } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { LogOut, Search } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import logo from "@/assets/logo.png";
 import { useAuthUser } from "@/hooks/useAuthUser";
+import { clearAuthUser } from "@/lib/auth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const TopNav = () => {
-  const { user } = useAuthUser();
+  const { user, refresh } = useAuthUser();
+  const navigate = useNavigate();
   const initial = (user?.name?.trim()?.[0] || "").toUpperCase();
 
   return (
@@ -34,19 +44,41 @@ export const TopNav = () => {
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground"
-          >
-            <Settings className="h-[18px] w-[18px]" />
-          </Button>
           {user ? (
-            <Avatar className="h-8 w-8 ring-1 ring-border">
-              <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                {initial || "U"}
-              </AvatarFallback>
-            </Avatar>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Open profile menu"
+                  className="rounded-full transition-opacity hover:opacity-90"
+                >
+                  <Avatar className="h-8 w-8 ring-1 ring-border">
+                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                      {initial || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuLabel>
+                  <div className="truncate text-sm">{user.name}</div>
+                  <div className="truncate text-xs font-normal text-muted-foreground">
+                    {user.email}
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={async () => {
+                    clearAuthUser();
+                    refresh();
+                    await navigate({ to: "/login" });
+                  }}
+                >
+                  <LogOut />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Button
               asChild
