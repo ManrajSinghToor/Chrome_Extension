@@ -3,7 +3,8 @@
   "name": "PixelLens Pro",
   "version": "3.1.0",
   "description": "AI-powered UI/UX QA tool — auto-captures your site and compares against Figma design",
-  "permissions": ["activeTab", "storage", "tabs"],
+  "permissions": ["activeTab", "storage", "tabs", "scripting"],
+  "host_permissions": ["http://localhost:3000/*", "http://localhost:5173/*", "http://localhost:8080/*"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": "icon.png"

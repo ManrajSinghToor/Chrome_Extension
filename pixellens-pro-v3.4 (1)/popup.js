@@ -1,14 +1,17 @@
 const SUPABASE_URL = "https://iltehbidzqrpusfebkcb.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsdGVoYmlkenFycHVzZmVia2NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNzM0OTYsImV4cCI6MjA5MTg0OTQ5Nn0.Z7vomWHsog3Dx7Kwa5A5YzVmNbSkO-fnXOm8g1oj1YA";
+const DASHBOARD_URL = "http://localhost:8080"; // or your deployed URL
 
 let designFile = null;
 let implDataUrl = null;
 let analysisResult = null;
+let currentTabUrl = null;
 
 // ── Auto-capture current tab on popup open ──
 (async function captureTab() {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    currentTabUrl = tab?.url || null;
     document.getElementById("tab-url").textContent = tab?.url ? new URL(tab.url).hostname : "Unknown";
     const dataUrl = await chrome.tabs.captureVisibleTab(null, { format: "png" });
     implDataUrl = dataUrl;
@@ -23,8 +26,6 @@ let analysisResult = null;
 // ── Design input handling ──
 const designInput = document.getElementById("design-input");
 const designBox = document.getElementById("design-box");
-const figmaLink = document.getElementById("figma-link");
-const fetchLinkBtn = document.getElementById("fetch-link-btn");
 const analyzeBtn = document.getElementById("analyze-btn");
 
 designBox.addEventListener("click", () => designInput.click());
@@ -33,51 +34,13 @@ designInput.addEventListener("change", (e) => {
   designFile = e.target.files[0];
   if (designFile) {
     showPreview(URL.createObjectURL(designFile));
-    figmaLink.value = "";
   }
   checkReady();
 });
 
-// ── Fetch from URL ──
-fetchLinkBtn.addEventListener("click", async () => {
-  const url = figmaLink.value.trim();
-  if (!url) return;
-  fetchLinkBtn.textContent = "⏳";
-  try {
-    let isDirectImage = false;
-    try {
-      const headResp = await fetch(url, { method: "HEAD" });
-      const ct = headResp.headers.get("content-type") || "";
-      isDirectImage = ct.startsWith("image/");
-    } catch (_) {}
-
-    if (isDirectImage) {
-      const resp = await fetch(url);
-      const blob = await resp.blob();
-      designFile = new File([blob], "design.png", { type: blob.type });
-      showPreview(URL.createObjectURL(designFile));
-    } else {
-      let blob = null;
-      try {
-        const resp = await fetch(`https://image.thum.io/get/width/1280/crop/800/png/${url}`);
-        if (resp.ok) { const b = await resp.blob(); if (b.type.startsWith("image/") && b.size > 1000) blob = b; }
-      } catch (_) {}
-      if (!blob) {
-        try {
-          const resp = await fetch(`https://shot.screenshotapi.net/screenshot?url=${encodeURIComponent(url)}&width=1280&height=800&output=image&file_type=png&wait_for_event=load`);
-          if (resp.ok) { const b = await resp.blob(); if (b.size > 1000) blob = b; }
-        } catch (_) {}
-      }
-      if (!blob) throw new Error("Could not screenshot this URL. Try uploading a screenshot instead.");
-      designFile = new File([blob], "design-screenshot.png", { type: "image/png" });
-      showPreview(URL.createObjectURL(designFile));
-    }
-    checkReady();
-  } catch (e) {
-    alert(e.message || "Could not load from that URL.");
-  } finally {
-    fetchLinkBtn.textContent = "⬇";
-  }
+// ── Dashboard buttons ──
+document.getElementById("dashboard-btn")?.addEventListener("click", () => {
+  chrome.tabs.create({ url: DASHBOARD_URL });
 });
 
 function showPreview(src) {
@@ -485,6 +448,46 @@ document.getElementById("export-csv")?.addEventListener("click", () => {
   });
   const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
   downloadBlob(new Blob([csv], { type: "text/csv" }), "pixellens-report.csv");
+});
+
+document.getElementById("export-dashboard-btn")?.addEventListener("click", () => {
+  chrome.tabs.create({ url: DASHBOARD_URL });
+});
+
+document.getElementById("add-dashboard-btn")?.addEventListener("click", () => {
+  if (!analysisResult) return;
+  const pending = {
+    ...analysisResult,
+    createdAt: Date.now(),
+    pageUrl: currentTabUrl || undefined,
+    domain: (() => {
+      try {
+        return currentTabUrl ? new URL(currentTabUrl).hostname : undefined;
+      } catch {
+        return undefined;
+      }
+    })(),
+  };
+
+  chrome.tabs.create({ url: `${DASHBOARD_URL}/add-scan` }, (tab) => {
+    const tabId = tab?.id;
+    if (!tabId) return;
+
+    const onUpdated = (updatedTabId, info) => {
+      if (updatedTabId !== tabId) return;
+      if (info.status !== "complete") return;
+      chrome.tabs.onUpdated.removeListener(onUpdated);
+
+      chrome.scripting.executeScript({
+        target: { tabId },
+        func: (data) => {
+          localStorage.setItem("pixellens_pending_analysis", JSON.stringify(data));
+        },
+        args: [pending],
+      });
+    };
+    chrome.tabs.onUpdated.addListener(onUpdated);
+  });
 });
 
 function downloadBlob(blob, name) {

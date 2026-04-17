@@ -10,7 +10,7 @@
   <div id="app">
     <header class="header">
       <div class="logo">
-        <span class="logo-icon">🔍</span>
+        <img class="logo-icon" src="icon.png" alt="logo" />
         <span class="logo-text">PixelLens <span class="pro">Pro</span></span>
       </div>
       <span class="version">v3.4</span>
@@ -29,12 +29,6 @@
     <section id="upload-section" class="section">
       <h3 class="section-title">Design Reference</h3>
       <div class="design-input-group">
-        <div class="figma-link-row">
-          <input type="text" id="figma-link" class="text-input" placeholder="Paste Figma link, image URL, or any website URL...">
-          <button id="fetch-link-btn" class="btn-icon" title="Fetch / Screenshot URL">⬇</button>
-        </div>
-        <p class="input-hint">Supports: direct image URLs, Figma share links, or any website URL (auto-screenshots)</p>
-        <div class="or-divider"><span>or</span></div>
         <div class="upload-box" id="design-box">
           <input type="file" id="design-input" accept="image/*" hidden>
           <div class="upload-placeholder" id="design-placeholder">
@@ -44,6 +38,7 @@
           <img id="design-preview" class="preview-img" hidden>
         </div>
       </div>
+      <button id="dashboard-btn" class="btn-secondary">Go To Dashboard</button>
       <button id="analyze-btn" class="btn-primary" disabled>
         <span id="btn-text">Analyze</span>
         <span id="btn-loader" class="loader" hidden></span>
@@ -125,7 +120,9 @@
 
       <div class="export-bar">
         <button id="export-json" class="btn-secondary">📥 Export JSON</button>
-        <button id="export-csv" class="btn-secondary">📊 Export CSV</button>
+        <button id="export-csv" class="btn-secondary">⬇️ Export CSV</button>
+        <button id="export-dashboard-btn" class="btn-secondary">📊 Go To Dashboard</button>
+        <button id="add-dashboard-btn" class="btn-secondary btn-secondary-tint">✚ Add To Dashboard</button>
       </div>
     </section>
 
