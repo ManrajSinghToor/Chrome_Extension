@@ -29,7 +29,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { projects } = useDashboardProjects();
+  const { projects, scans } = useDashboardProjects();
   const [status, setStatus] = useState<StatusFilter>("All");
   const [sort, setSort] = useState<SortOption>("Recent");
 
@@ -93,7 +93,7 @@ function Index() {
             )}
           </section>
 
-          <RecentActivity />
+          <RecentActivity scans={scans} />
 
           <footer className="flex items-center justify-between border-t border-border pt-6 text-xs text-muted-foreground">
             <span>© Pixel Lens Pro</span>

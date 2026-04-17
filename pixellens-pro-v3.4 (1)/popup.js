@@ -1,6 +1,6 @@
 const SUPABASE_URL = "https://iltehbidzqrpusfebkcb.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsdGVoYmlkenFycHVzZmVia2NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNzM0OTYsImV4cCI6MjA5MTg0OTQ5Nn0.Z7vomWHsog3Dx7Kwa5A5YzVmNbSkO-fnXOm8g1oj1YA";
-const DASHBOARD_URL = "http://localhost:8080"; // or your deployed URL
+const DASHBOARD_URL = "http://localhost:8081"; // or your deployed URL
 
 let designFile = null;
 let implDataUrl = null;
